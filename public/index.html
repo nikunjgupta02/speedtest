@@ -2,220 +2,917 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SignalPulse — Speed Tester</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="description" content="SignalPulse — Advanced Network Speed Tester. Measure download, upload, ping, jitter with glassmorphic UI and dark/light modes.">
+<meta name="keywords" content="speed test, internet speed, network diagnostics, ping test, download speed, upload speed">
+<meta name="author" content="SignalPulse">
+<meta name="theme-color" content="#080d1a">
+<meta property="og:title" content="SignalPulse — Speed Tester">
+<meta property="og:description" content="Test your internet speed with advanced network diagnostics and beautiful UI.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SignalPulse — Speed Tester">
+<meta name="twitter:description" content="Advanced network diagnostics tool with glassmorphic design">
+<title>SignalPulse — Speed Tester | Check Your Internet Speed</title>
+<link rel="canonical" href="https://nikunjgupta02.github.io/speedtest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Dark Mode */
+  --bg-primary: #080d1a;
+  --bg-secondary: #0e1525;
+  --bg-tertiary: #111827;
+  --bg-glass: rgba(14, 21, 37, 0.7);
+  --border-color: #1e2d4d;
+  --text-primary: #e8eeff;
+  --text-secondary: #8ca0cc;
+  --text-tertiary: #4a5a8a;
+  --text-light: #6b7db3;
+  --accent-cyan: #00e5ff;
+  --accent-purple: #c4b5fd;
+  --accent-green: #00d97e;
+  --accent-yellow: #fbbf24;
+  --accent-red: #ff5a5a;
+  --accent-orange: #fb923c;
+  --accent-lime: #a3e635;
+  
+  /* Glassmorphism */
+  --glass-blur: 20px;
+  --glass-opacity: 0.7;
+}
+
+body.light-mode {
+  --bg-primary: #f5f7fb;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f0f4fa;
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  --border-color: #e0e8f4;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-light: #64748b;
+  --accent-cyan: #0ea5e9;
+  --accent-purple: #a855f7;
+}
+
 body {
   font-family: 'DM Sans', sans-serif;
-  background: #080d1a;
-  color: #e8eeff;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   display: flex;
-  align-items: flex-start;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  overflow-x: hidden;
 }
-.app {
-  max-width: 680px;
+
+/* Animated gradient background */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  padding: 2.5rem 1.5rem 4rem;
+  height: 100%;
+  background: radial-gradient(circle at 20% 50%, rgba(0, 229, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(196, 181, 253, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: gradientShift 8s ease-in-out infinite;
 }
-.header { text-align: center; margin-bottom: 2.5rem; }
+
+@keyframes gradientShift {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.8; }
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 20px;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
+}
+
+.app {
+  max-width: 720px;
+  width: 100%;
+  padding: 3rem 1.5rem 4rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  animation: slideDown 0.7s ease-out;
+}
+
 .header-eyebrow {
-  font-size: 11px; font-weight: 500; letter-spacing: 0.18em;
-  text-transform: uppercase; color: #6b7db3; margin-bottom: 0.5rem;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: 0.5rem;
 }
+
 .header-title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px; font-weight: 600; color: #c4cfff; letter-spacing: -0.02em;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
-.header-title span { color: #00e5ff; }
+
+.header-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  letter-spacing: 0.05em;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── GLASSMORPHIC CARDS ─── */
+.glass-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+}
+
+.glass-card:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 8px 32px 0 rgba(0, 229, 255, 0.15);
+  transform: translateY(-2px);
+}
 
 /* ─── DIAL ─── */
-.dial-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto 2rem; }
-.dial-svg { width: 100%; height: 100%; }
-.dial-center {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center; pointer-events: none;
+.dial-wrap {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 0 auto 2.5rem;
+  animation: scaleIn 0.8s ease-out;
 }
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dial-svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 20px rgba(0, 229, 255, 0.1));
+}
+
+.dial-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  background: var(--bg-glass);
+  backdrop-filter: blur(calc(var(--glass-blur) * 2));
+  border-radius: 50%;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(0, 229, 255, 0.2);
+}
+
 .dial-value {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 46px; font-weight: 700; color: #00e5ff;
-  line-height: 1; letter-spacing: -0.03em;
+  font-size: 52px;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  animation: pulse 2s ease-in-out infinite;
 }
-.dial-unit { font-size: 13px; color: #6b7db3; margin-top: 2px; letter-spacing: 0.1em; }
-.dial-phase { font-size: 11px; color: #4a5a8a; margin-top: 6px; font-weight: 500; letter-spacing: 0.08em; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.dial-unit {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+
+.dial-phase {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 8px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
 
 .pulse-ring {
   animation: pulseRing 2s ease-out infinite;
-  transform-origin: 140px 140px; opacity: 0;
+  transform-origin: 160px 160px;
+  opacity: 0;
 }
+
 .pulse-ring:nth-child(2) { animation-delay: 0.7s; }
 .pulse-ring:nth-child(3) { animation-delay: 1.4s; }
-@keyframes pulseRing { 0% { r: 30; opacity: 0.7; } 100% { r: 130; opacity: 0; } }
-.needle { transform-origin: 140px 140px; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
 
-/* ─── STATUS ─── */
-.status-bar {
-  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 14px;
-  padding: 0.75rem 1.25rem; margin-bottom: 1.5rem;
-  display: flex; align-items: center; gap: 10px;
+@keyframes pulseRing {
+  0% { r: 40; opacity: 0.7; }
+  100% { r: 150; opacity: 0; }
 }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #374a6e; flex-shrink: 0; transition: background 0.3s; }
-.status-dot.active { background: #00e5ff; animation: blink 1s infinite; }
-.status-dot.done   { background: #00d97e; }
-.status-dot.error  { background: #ff5a5a; }
-@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-.status-text { font-size: 13px; color: #8ca0cc; flex: 1; }
-.status-server { font-size: 11px; color: #3d5178; font-weight: 500; }
+
+.needle {
+  transform-origin: 160px 160px;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.5));
+}
+
+/* ─── STATUS BAR ─── */
+.status-bar {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  animation: slideInLeft 0.7s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(74, 90, 138, 0.3);
+}
+
+.status-dot.active {
+  background: var(--accent-cyan);
+  animation: blink 1s infinite;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.6);
+}
+
+.status-dot.done {
+  background: var(--accent-green);
+  box-shadow: 0 0 15px rgba(0, 217, 126, 0.5);
+}
+
+.status-dot.error {
+  background: var(--accent-red);
+  box-shadow: 0 0 15px rgba(255, 90, 90, 0.5);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  flex: 1;
+  font-weight: 500;
+}
+
+.status-server {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
 
 /* ─── PROGRESS ─── */
 .progress-wrap {
-  height: 3px; background: #111827; border-radius: 2px;
-  margin-bottom: 1.5rem; overflow: hidden; opacity: 0; transition: opacity 0.3s;
-}
-.progress-bar {
-  height: 100%; background: linear-gradient(90deg, #00e5ff, #c4b5fd);
-  border-radius: 2px; width: 0%; transition: width 0.3s ease;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* ─── METRICS ─── */
-.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
-.metric-card {
-  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 12px;
-  padding: 1rem; text-align: center; transition: border-color 0.3s;
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  border-radius: 3px;
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
 }
-.metric-card.highlight { border-color: #00e5ff44; }
-.metric-icon { font-size: 18px; margin-bottom: 6px; color: #3d5178; }
-.metric-icon.active       { color: #00e5ff; }
-.metric-icon.upload-active{ color: #c4b5fd; }
-.metric-label { font-size: 11px; color: #4a5a8a; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; margin-bottom: 6px; }
-.metric-value { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; color: #c4cfff; letter-spacing: -0.02em; }
-.metric-unit  { font-size: 10px; color: #4a5a8a; margin-top: 2px; }
-.metric-value.lit        { color: #00e5ff; }
-.metric-value.upload-lit { color: #c4b5fd; }
-.metric-value.ping-lit   { color: #fbbf24; }
+
+/* ─── METRICS GRID ─── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  animation: slideInUp 0.8s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metric-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 229, 255, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.metric-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 229, 255, 0.15);
+}
+
+.metric-card:hover::before { opacity: 1; }
+
+.metric-card.highlight {
+  border-color: rgba(0, 229, 255, 0.4);
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.05), rgba(196, 181, 253, 0.05));
+}
+
+.metric-icon {
+  font-size: 20px;
+  margin-bottom: 8px;
+  color: var(--text-tertiary);
+  transition: all 0.3s ease;
+}
+
+.metric-icon.active { color: var(--accent-cyan); }
+.metric-icon.upload-active { color: var(--accent-purple); }
+
+.metric-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  transition: color 0.3s ease;
+}
+
+.metric-unit {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.metric-value.lit { color: var(--accent-cyan); }
+.metric-value.upload-lit { color: var(--accent-purple); }
+.metric-value.ping-lit { color: var(--accent-yellow); }
 
 /* ─── DETAILS ─── */
-.details-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
-.detail-card {
-  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 10px;
-  padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;
+.details-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 1.5rem;
 }
-.detail-label { font-size: 12px; color: #4a5a8a; }
-.detail-value { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #8ca0cc; font-weight: 500; }
+
+.detail-card {
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.detail-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
 
 /* ─── SPARKLINE ─── */
 .sparkline-wrap {
-  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 12px;
-  padding: 1rem; margin-bottom: 1.5rem; opacity: 0; transition: opacity 0.4s;
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  transition: all 0.4s ease;
 }
-.sparkline-label { font-size: 11px; color: #3d5178; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: flex; justify-content: space-between; }
-.sparkline-canvas { width: 100%; height: 60px; display: block; }
+
+.sparkline-wrap.visible { opacity: 1; }
+
+.sparkline-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.sparkline-canvas {
+  width: 100%;
+  height: 70px;
+  display: block;
+}
 
 /* ─── BUTTON ─── */
 .run-btn {
-  display: block; width: 100%; padding: 1rem;
-  background: transparent; border: 0.5px solid #00e5ff55; border-radius: 14px;
-  font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600;
-  color: #00e5ff; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s;
-  margin-bottom: 1rem;
+  display: block;
+  width: 100%;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  border: none;
+  border-radius: 16px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 229, 255, 0.2);
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
 }
-.run-btn:hover:not(:disabled) { background: #00e5ff0d; border-color: #00e5ff; }
-.run-btn:disabled { color: #3d5178; border-color: #1e2d4d; cursor: not-allowed; }
+
+.run-btn::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.run-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 229, 255, 0.3);
+}
+
+.run-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 /* ─── RESULT SUMMARY ─── */
 .result-summary {
-  text-align: center; padding: 1rem;
-  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 14px;
-  margin-bottom: 1.5rem; display: none;
+  text-align: center;
+  padding: 2rem;
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  margin-bottom: 1.5rem;
+  display: none;
+  animation: fadeIn 0.5s ease-out;
 }
+
 .result-summary.show { display: block; }
-.grade-badge {
-  display: inline-block; font-family: 'Space Grotesk', sans-serif;
-  font-size: 28px; font-weight: 700; width: 50px; height: 50px;
-  line-height: 50px; text-align: center; border-radius: 10px; margin-bottom: 4px;
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.result-desc { font-size: 13px; color: #6b7db3; margin-top: 4px; }
+
+.grade-badge {
+  display: inline-block;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  width: 80px;
+  height: 80px;
+  line-height: 80px;
+  text-align: center;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 24px rgba(0, 229, 255, 0.2);
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes bounceIn {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.result-desc {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 12px;
+  line-height: 1.6;
+}
 
 /* ─── SERVER INPUT ─── */
-.server-input-wrap { display: flex; gap: 8px; margin-bottom: 1.5rem; align-items: center; }
-.server-label { font-size: 12px; color: #3d5178; white-space: nowrap; flex-shrink: 0; }
-.server-input {
-  flex: 1; background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 8px;
-  padding: 6px 10px; font-size: 12px; font-family: 'Space Grotesk', monospace;
-  color: #8ca0cc; outline: none;
+.server-input-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 2rem;
+  align-items: center;
+  flex-wrap: wrap;
 }
-.server-input:focus { border-color: #00e5ff44; }
+
+.server-label {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.server-input {
+  flex: 1;
+  min-width: 150px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-family: 'Space Grotesk', monospace;
+  color: var(--text-secondary);
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.server-input:focus {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.2);
+}
+
 .demo-badge {
-  font-size: 10px; background: #1a2740; color: #4a6a9a; padding: 3px 8px;
-  border-radius: 5px; white-space: nowrap; border: 0.5px solid #1e2d4d;
+  font-size: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+  padding: 6px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  letter-spacing: 0.05em;
 }
 
 /* ─── HISTORY ─── */
-.history-section { margin-top: 0.5rem; }
-.history-label { font-size: 11px; color: #3d5178; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
-.history-row { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid #0e1525; }
-.history-time { font-size: 11px; color: #3d5178; min-width: 50px; }
-.history-bars { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
-.history-chip {
-  font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: #6b7db3;
-  background: #111827; padding: 2px 8px; border-radius: 6px;
-  display: flex; align-items: center; gap: 4px;
+.history-section {
+  margin-top: 1rem;
+  animation: slideInUp 0.8s ease-out;
 }
-.history-chip span { font-weight: 600; color: #8ca0cc; }
+
+.history-label {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  border-radius: 12px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+.history-row:hover {
+  border-color: var(--accent-cyan);
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.05), rgba(196, 181, 253, 0.05));
+}
+
+.history-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  min-width: 50px;
+  font-weight: 600;
+  font-family: 'Space Grotesk', monospace;
+}
+
+.history-bars {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.history-chip {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+  padding: 4px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.history-chip:hover {
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.history-chip span {
+  font-weight: 700;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 640px) {
+  .app {
+    padding: 2rem 1rem 3rem;
+  }
+
+  .header-title {
+    font-size: 1.5rem;
+  }
+
+  .dial-wrap {
+    width: 260px;
+    height: 260px;
+    margin-bottom: 2rem;
+  }
+
+  .dial-center {
+    width: 150px;
+    height: 150px;
+  }
+
+  .dial-value {
+    font-size: 40px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .details-row {
+    grid-template-columns: 1fr;
+  }
+
+  .server-input-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .theme-toggle {
+    top: 1rem;
+    right: 1rem;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ─── ACCESSIBILITY ─── */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── PRINT STYLES ─── */
+@media print {
+  body::before { display: none; }
+  .theme-toggle { display: none; }
+  .run-btn { display: none; }
+  .glass-card { box-shadow: none; border: 1px solid #ccc; }
+}
 </style>
 </head>
 <body>
+
+<div class="theme-toggle" id="themeToggle" title="Toggle dark/light mode">🌙</div>
+
 <div class="app">
   <div class="header">
-    <div class="header-eyebrow">Network Diagnostics</div>
-    <div class="header-title">signal<span>pulse</span></div>
+    <div class="header-eyebrow">⚡ Network Diagnostics</div>
+    <div class="header-title">Signal<span style="background: linear-gradient(135deg, #00e5ff, #c4b5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Pulse</span></div>
+    <div class="header-subtitle">Advanced Internet Speed Testing</div>
   </div>
 
   <div class="server-input-wrap">
-    <span class="server-label">Server</span>
+    <span class="server-label">🌐 Server</span>
     <input class="server-input" id="serverUrl" value="" placeholder="(same origin)" />
-    <span class="demo-badge">Demo mode if offline</span>
+    <span class="demo-badge">Demo if offline</span>
   </div>
 
   <div class="dial-wrap">
-    <svg class="dial-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+    <svg class="dial-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+          <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.4"/>
           <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.8"/>
         </linearGradient>
         <filter id="glowF">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feGaussianBlur stdDeviation="4" result="blur"/>
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        <filter id="glassEffect">
+          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="5" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="1" />
+        </filter>
       </defs>
-      <circle cx="140" cy="140" r="120" fill="none" stroke="#1e2d4d" stroke-width="0.5"/>
-      <circle cx="140" cy="140" r="100" fill="none" stroke="#1a2438" stroke-width="0.5"/>
-      <circle cx="140" cy="140" r="80"  fill="none" stroke="#141e30" stroke-width="0.5"/>
-      <circle cx="140" cy="140" r="55"  fill="#0a1020" stroke="#1e2d4d" stroke-width="0.5"/>
-      <circle id="speedArc" cx="140" cy="140" r="110"
-        fill="none" stroke="url(#arcGrad)" stroke-width="6"
-        stroke-dasharray="0 692" stroke-dashoffset="173"
-        stroke-linecap="round" transform="rotate(-225 140 140)"
+      
+      <!-- Background circles -->
+      <circle cx="160" cy="160" r="140" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+      <circle cx="160" cy="160" r="115" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.15"/>
+      <circle cx="160" cy="160" r="90" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.1"/>
+      <circle cx="160" cy="160" r="65" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.08"/>
+      
+      <!-- Center circle -->
+      <circle cx="160" cy="160" r="60" fill="url(#glassEffect)" opacity="0.1"/>
+      <circle cx="160" cy="160" r="60" fill="none" stroke="currentColor" stroke-width="0.5" opacity="0.2"/>
+      
+      <!-- Speed arc -->
+      <circle id="speedArc" cx="160" cy="160" r="130"
+        fill="none" stroke="url(#arcGrad)" stroke-width="8"
+        stroke-dasharray="0 817" stroke-dashoffset="204"
+        stroke-linecap="round" transform="rotate(-225 160 160)"
         style="transition:stroke-dasharray 0.5s ease;filter:url(#glowF)"/>
-      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
-      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="1"/>
-      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="0.5"/>
-      <g id="needle" class="needle" transform="rotate(-115 140 140)">
-        <line x1="140" y1="140" x2="140" y2="42" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" filter="url(#glowF)"/>
-        <circle cx="140" cy="140" r="6" fill="#00e5ff" filter="url(#glowF)"/>
-        <circle cx="140" cy="140" r="3" fill="#080d1a"/>
+      
+      <!-- Pulse rings -->
+      <circle class="pulse-ring" cx="160" cy="160" r="35" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle class="pulse-ring" cx="160" cy="160" r="35" fill="none" stroke="#00e5ff" stroke-width="1"/>
+      <circle class="pulse-ring" cx="160" cy="160" r="35" fill="none" stroke="#00e5ff" stroke-width="0.5"/>
+      
+      <!-- Needle -->
+      <g id="needle" class="needle" transform="rotate(-115 160 160)">
+        <line x1="160" y1="160" x2="160" y2="45" stroke="#00e5ff" stroke-width="3" stroke-linecap="round" filter="url(#glowF)"/>
+        <circle cx="160" cy="160" r="7" fill="#00e5ff" filter="url(#glowF)"/>
+        <circle cx="160" cy="160" r="4" fill="#080d1a"/>
       </g>
-      <text x="30"  y="205" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">0</text>
-      <text x="55"  y="255" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">25</text>
-      <text x="140" y="268" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">50</text>
-      <text x="225" y="255" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">100</text>
-      <text x="250" y="205" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">500</text>
+      
+      <!-- Dial markers and labels -->
+      <text x="40" y="240" fill="currentColor" font-size="10" font-family="Space Grotesk,sans-serif" text-anchor="middle" opacity="0.4">0</text>
+      <text x="70" y="285" fill="currentColor" font-size="10" font-family="Space Grotesk,sans-serif" text-anchor="middle" opacity="0.4">25</text>
+      <text x="160" y="310" fill="currentColor" font-size="10" font-family="Space Grotesk,sans-serif" text-anchor="middle" opacity="0.4">50</text>
+      <text x="250" y="285" fill="currentColor" font-size="10" font-family="Space Grotesk,sans-serif" text-anchor="middle" opacity="0.4">100</text>
+      <text x="280" y="240" fill="currentColor" font-size="10" font-family="Space Grotesk,sans-serif" text-anchor="middle" opacity="0.4">500</text>
     </svg>
     <div class="dial-center">
       <div class="dial-value" id="dialValue">—</div>
@@ -224,28 +921,30 @@ body {
     </div>
   </div>
 
-  <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
 
-  <div class="status-bar">
+  <div class="status-bar glass-card">
     <div class="status-dot" id="statusDot"></div>
     <span class="status-text" id="statusText">Press "Run Test" to begin measurement</span>
     <span class="status-server" id="statusServer">—</span>
   </div>
 
   <div class="metrics-grid">
-    <div class="metric-card" id="card-ping">
+    <div class="metric-card glass-card" id="card-ping">
       <div class="metric-icon" id="icon-ping">◎</div>
       <div class="metric-label">Ping</div>
       <div class="metric-value" id="val-ping">—</div>
       <div class="metric-unit">ms</div>
     </div>
-    <div class="metric-card" id="card-dl">
+    <div class="metric-card glass-card" id="card-dl">
       <div class="metric-icon" id="icon-dl">↓</div>
       <div class="metric-label">Download</div>
       <div class="metric-value" id="val-dl">—</div>
       <div class="metric-unit">Mbps</div>
     </div>
-    <div class="metric-card" id="card-ul">
+    <div class="metric-card glass-card" id="card-ul">
       <div class="metric-icon" id="icon-ul">↑</div>
       <div class="metric-label">Upload</div>
       <div class="metric-value" id="val-ul">—</div>
@@ -254,18 +953,18 @@ body {
   </div>
 
   <div class="details-row">
-    <div class="detail-card"><span class="detail-label">⧖ Jitter</span><span class="detail-value" id="val-jitter">—</span></div>
-    <div class="detail-card"><span class="detail-label">⊙ IP / Server</span><span class="detail-value" id="val-ip">—</span></div>
-    <div class="detail-card"><span class="detail-label">⊛ Packet loss</span><span class="detail-value" id="val-loss">—</span></div>
-    <div class="detail-card"><span class="detail-label">⊞ Overhead</span><span class="detail-value" id="val-overhead">—</span></div>
+    <div class="detail-card glass-card"><span class="detail-label">⧖ Jitter</span><span class="detail-value" id="val-jitter">—</span></div>
+    <div class="detail-card glass-card"><span class="detail-label">⊙ IP / Server</span><span class="detail-value" id="val-ip">—</span></div>
+    <div class="detail-card glass-card"><span class="detail-label">⊛ Packet Loss</span><span class="detail-value" id="val-loss">—</span></div>
+    <div class="detail-card glass-card"><span class="detail-label">⊞ Overhead</span><span class="detail-value" id="val-overhead">—</span></div>
   </div>
 
-  <div class="sparkline-wrap" id="sparklineWrap">
-    <div class="sparkline-label"><span>live throughput</span><span id="sparklinePhase"></span></div>
-    <canvas class="sparkline-canvas" id="sparklineCanvas" height="60"></canvas>
+  <div class="sparkline-wrap glass-card" id="sparklineWrap">
+    <div class="sparkline-label"><span>📊 Live Throughput</span><span id="sparklinePhase"></span></div>
+    <canvas class="sparkline-canvas" id="sparklineCanvas" height="70"></canvas>
   </div>
 
-  <div class="result-summary" id="resultSummary">
+  <div class="result-summary glass-card" id="resultSummary">
     <div class="grade-badge" id="gradeBadge">—</div>
     <div class="result-desc" id="resultDesc">—</div>
   </div>
@@ -273,12 +972,36 @@ body {
   <button class="run-btn" id="runBtn" onclick="runTest()">▶ Run Test</button>
 
   <div class="history-section" id="historySection" style="display:none">
-    <div class="history-label">Recent tests</div>
+    <div class="history-label">📋 Recent Tests</div>
     <div id="historyList"></div>
   </div>
 </div>
 
 <script>
+// Theme toggle
+const themeToggle = document.getElementById('themeToggle');
+const htmlElement = document.documentElement;
+const body = document.body;
+
+const savedTheme = localStorage.getItem('theme') || 'dark';
+if (savedTheme === 'light') {
+  body.classList.add('light-mode');
+  themeToggle.textContent = '☀️';
+} else {
+  body.classList.remove('light-mode');
+  themeToggle.textContent = '🌙';
+}
+
+themeToggle.addEventListener('click', () => {
+  body.classList.toggle('light-mode');
+  const isLight = body.classList.contains('light-mode');
+  themeToggle.textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+});
+
+// Prevent theme toggle from interfering with touch events on mobile
+themeToggle.addEventListener('touchend', (e) => e.preventDefault());
+
 const BASE = () => document.getElementById('serverUrl').value.trim().replace(/\/$/, '') || '';
 let running = false;
 let sparklineData = [];
@@ -292,8 +1015,8 @@ function speedToAngle(mbps) {
 
 function setNeedle(mbps) {
   const angle = speedToAngle(mbps);
-  document.getElementById('needle').setAttribute('transform', `rotate(${angle} 140 140)`);
-  const circ = 2 * Math.PI * 110;
+  document.getElementById('needle').setAttribute('transform', `rotate(${angle} 160 160)`);
+  const circ = 2 * Math.PI * 130;
   const pct = Math.log1p(Math.min(mbps, 500)) / Math.log1p(500);
   const dash = pct * circ * 0.722;
   document.getElementById('speedArc').setAttribute('stroke-dasharray', `${dash} ${circ}`);
@@ -309,7 +1032,7 @@ function setProgress(pct) { document.getElementById('progressBar').style.width =
 function drawSparkline(data, color = '#00e5ff') {
   const canvas = document.getElementById('sparklineCanvas');
   canvas.width = canvas.offsetWidth || 600;
-  canvas.height = 60;
+  canvas.height = 70;
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   if (data.length < 2) return;
@@ -317,182 +1040,263 @@ function drawSparkline(data, color = '#00e5ff') {
   const w = canvas.width, h = canvas.height;
   const step = w / (data.length - 1);
   const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, color + '55'); grad.addColorStop(1, color + '00');
-  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  grad.addColorStop(0, color + '88');
+  grad.addColorStop(1, color + '00');
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
+  ctx.shadowColor = color + '40';
+  ctx.shadowBlur = 8;
   ctx.beginPath();
-  data.forEach((v, i) => { const x = i*step, y = h-(v/max)*(h-8)-4; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  data.forEach((v, i) => {
+    const x = i*step, y = h-(v/max)*(h-10)-5;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
   ctx.stroke();
   ctx.beginPath();
-  data.forEach((v, i) => { const x = i*step, y = h-(v/max)*(h-8)-4; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
-  ctx.lineTo((data.length-1)*step,h); ctx.lineTo(0,h); ctx.closePath();
-  ctx.fillStyle = grad; ctx.fill();
+  data.forEach((v, i) => {
+    const x = i*step, y = h-(v/max)*(h-10)-5;
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });
+  ctx.lineTo((data.length-1)*step, h);
+  ctx.lineTo(0, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
 }
 
 function litCard(id, val, cssClass) {
   document.getElementById('card-' + id).classList.add('highlight');
   const el = document.getElementById('val-' + id);
-  el.textContent = val; el.className = 'metric-value ' + cssClass;
+  el.textContent = val;
+  el.className = 'metric-value ' + cssClass;
 }
 
 async function measurePing(base) {
   const samples = [];
   for (let i = 0; i < 5; i++) {
-    try { const t0 = performance.now(); await fetch(`${base}/api/ping?t=${Date.now()}`,{cache:'no-store'}); samples.push(performance.now()-t0); } catch {}
+    try {
+      const t0 = performance.now();
+      await fetch(`${base}/api/ping?t=${Date.now()}`, { cache: 'no-store' });
+      samples.push(performance.now() - t0);
+    } catch {}
     await sleep(100);
   }
   if (!samples.length) return null;
-  samples.sort((a,b)=>a-b);
-  const avg = samples.reduce((a,b)=>a+b,0)/samples.length;
-  return { ping: Math.round(avg), jitter: Math.round(Math.max(...samples)-Math.min(...samples)) };
+  samples.sort((a, b) => a - b);
+  const avg = samples.reduce((a, b) => a + b, 0) / samples.length;
+  return { ping: Math.round(avg), jitter: Math.round(Math.max(...samples) - Math.min(...samples)) };
 }
 
 async function measureDownload(base) {
   sparklineData = [];
-  document.getElementById('sparklineWrap').style.opacity = 1;
-  let totalBytes = 0; const tStart = performance.now();
+  document.getElementById('sparklineWrap').classList.add('visible');
+  let totalBytes = 0;
+  const tStart = performance.now();
   for (const mb of [1, 2, 4]) {
     const bytes = mb * 1024 * 1024;
     try {
       const t0 = performance.now();
-      const resp = await fetch(`${base}/api/download?size=${bytes}&t=${Date.now()}`,{cache:'no-store'});
-      const reader = resp.body.getReader(); let received = 0;
+      const resp = await fetch(`${base}/api/download?size=${bytes}&t=${Date.now()}`, { cache: 'no-store' });
+      const reader = resp.body.getReader();
+      let received = 0;
       while (true) {
-        const {done, value} = await reader.read(); if (done) break;
+        const { done, value } = await reader.read();
+        if (done) break;
         received += value.length;
-        const elapsed = (performance.now()-t0)/1000;
-        const mbps = (received*8)/(elapsed*1e6);
-        sparklineData.push(mbps); if (sparklineData.length>40) sparklineData.shift();
-        drawSparkline(sparklineData,'#00e5ff'); setNeedle(mbps); setDialValue(mbps.toFixed(1));
+        const elapsed = (performance.now() - t0) / 1000;
+        const mbps = (received * 8) / (elapsed * 1e6);
+        sparklineData.push(mbps);
+        if (sparklineData.length > 40) sparklineData.shift();
+        drawSparkline(sparklineData, '#00e5ff');
+        setNeedle(mbps);
+        setDialValue(mbps.toFixed(1));
         document.getElementById('val-dl').textContent = mbps.toFixed(1);
       }
       totalBytes += received;
     } catch { return null; }
-    setProgress(30 + ([1,5,10].indexOf(mb)+1)*20);
+    setProgress(30 + ([1, 5, 10].indexOf(mb) + 1) * 20);
   }
-  const elapsed = (performance.now()-tStart)/1000;
-  return (totalBytes*8)/(elapsed*1e6);
+  const elapsed = (performance.now() - tStart) / 1000;
+  return (totalBytes * 8) / (elapsed * 1e6);
 }
 
 async function measureUpload(base) {
   sparklineData = [];
-  let totalBytes = 0; const tStart = performance.now();
+  let totalBytes = 0;
+  const tStart = performance.now();
   for (const mb of [1, 3]) {
-    const bytes = mb*1024*1024;
+    const bytes = mb * 1024 * 1024;
     try {
       const t0 = performance.now();
-      await fetch(`${base}/api/upload`,{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:new Uint8Array(bytes)});
-      const elapsed = (performance.now()-t0)/1000;
-      const mbps = (bytes*8)/(elapsed*1e6);
-      sparklineData.push(mbps); drawSparkline(sparklineData,'#c4b5fd');
-      setNeedle(mbps); setDialValue(mbps.toFixed(1));
+      await fetch(`${base}/api/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: new Uint8Array(bytes)
+      });
+      const elapsed = (performance.now() - t0) / 1000;
+      const mbps = (bytes * 8) / (elapsed * 1e6);
+      sparklineData.push(mbps);
+      drawSparkline(sparklineData, '#c4b5fd');
+      setNeedle(mbps);
+      setDialValue(mbps.toFixed(1));
       document.getElementById('val-ul').textContent = mbps.toFixed(1);
       totalBytes += bytes;
     } catch { return null; }
-    setProgress(80 + ([1,5].indexOf(mb)+1)*8);
+    setProgress(80 + ([1, 5].indexOf(mb) + 1) * 8);
   }
-  const elapsed = (performance.now()-tStart)/1000;
-  return (totalBytes*8)/(elapsed*1e6);
+  const elapsed = (performance.now() - tStart) / 1000;
+  return (totalBytes * 8) / (elapsed * 1e6);
 }
 
 async function demoRun() {
-  setStatus('Demo mode — simulating measurements','active'); setServer('demo.local'); setPhase('ping');
-  document.getElementById('sparklineWrap').style.opacity = 1; sparklineData = [];
+  setStatus('Demo mode — simulating measurements', 'active');
+  setServer('demo.local');
+  setPhase('ping');
+  document.getElementById('sparklineWrap').classList.add('visible');
+  sparklineData = [];
   await sleep(200);
-  const demoPing = 18+Math.random()*30|0, demoJitter = 2+Math.random()*8|0;
+  const demoPing = 18 + Math.random() * 30 | 0;
+  const demoJitter = 2 + Math.random() * 8 | 0;
   litCard('ping', demoPing, 'ping-lit');
-  document.getElementById('val-jitter').textContent = demoJitter+' ms';
-  document.getElementById('val-ip').textContent = '192.168.1.'+(1+Math.random()*254|0);
-  document.getElementById('val-loss').textContent = (Math.random()*0.5).toFixed(2)+'%';
-  document.getElementById('val-overhead').textContent = (Math.random()*12+2).toFixed(1)+' ms';
-  setProgress(25); setPhase('download ↓');
-  for (let i=0;i<40;i++) {
-    const peak = 80+Math.random()*400;
-    const v = peak*(0.7+Math.sin(i/5)*0.3+Math.random()*0.2);
-    sparklineData.push(v); if (sparklineData.length>40) sparklineData.shift();
-    drawSparkline(sparklineData,'#00e5ff'); setNeedle(v); setDialValue(v.toFixed(1));
+  document.getElementById('val-jitter').textContent = demoJitter + ' ms';
+  document.getElementById('val-ip').textContent = '192.168.1.' + (1 + Math.random() * 254 | 0);
+  document.getElementById('val-loss').textContent = (Math.random() * 0.5).toFixed(2) + '%';
+  document.getElementById('val-overhead').textContent = (Math.random() * 12 + 2).toFixed(1) + ' ms';
+  setProgress(25);
+  setPhase('download ↓');
+  for (let i = 0; i < 40; i++) {
+    const peak = 80 + Math.random() * 400;
+    const v = peak * (0.7 + Math.sin(i / 5) * 0.3 + Math.random() * 0.2);
+    sparklineData.push(v);
+    if (sparklineData.length > 40) sparklineData.shift();
+    drawSparkline(sparklineData, '#00e5ff');
+    setNeedle(v);
+    setDialValue(v.toFixed(1));
     document.getElementById('val-dl').textContent = v.toFixed(1);
-    setProgress(25+i*1.4); await sleep(60);
+    setProgress(25 + i * 1.4);
+    await sleep(60);
   }
-  const finalDl = 80+Math.random()*350;
-  litCard('dl', finalDl.toFixed(1), 'lit'); setProgress(80);
-  sparklineData = []; setPhase('upload ↑');
-  for (let i=0;i<20;i++) {
-    const v=(finalDl*0.3)*(0.8+Math.random()*0.4);
-    sparklineData.push(v); if (sparklineData.length>20) sparklineData.shift();
-    drawSparkline(sparklineData,'#c4b5fd'); setNeedle(v); setDialValue(v.toFixed(1));
+  const finalDl = 80 + Math.random() * 350;
+  litCard('dl', finalDl.toFixed(1), 'lit');
+  setProgress(80);
+  sparklineData = [];
+  setPhase('upload ↑');
+  for (let i = 0; i < 20; i++) {
+    const v = (finalDl * 0.3) * (0.8 + Math.random() * 0.4);
+    sparklineData.push(v);
+    if (sparklineData.length > 20) sparklineData.shift();
+    drawSparkline(sparklineData, '#c4b5fd');
+    setNeedle(v);
+    setDialValue(v.toFixed(1));
     document.getElementById('val-ul').textContent = v.toFixed(1);
-    setProgress(80+i*1); await sleep(80);
+    setProgress(80 + i * 1);
+    await sleep(80);
   }
-  const finalUl = finalDl*(0.2+Math.random()*0.25);
+  const finalUl = finalDl * (0.2 + Math.random() * 0.25);
   litCard('ul', finalUl.toFixed(1), 'upload-lit');
-  return {ping:demoPing,jitter:demoJitter,dl:finalDl,ul:finalUl};
+  return { ping: demoPing, jitter: demoJitter, dl: finalDl, ul: finalUl };
 }
 
 async function realRun() {
   const base = BASE();
-  setStatus('Measuring ping…','active'); setPhase('ping'); setProgress(5);
+  setStatus('Measuring ping…', 'active');
+  setPhase('ping');
+  setProgress(5);
   const pingRes = await measurePing(base);
   if (!pingRes) throw new Error('Server unreachable');
   litCard('ping', pingRes.ping, 'ping-lit');
-  document.getElementById('val-jitter').textContent = pingRes.jitter+' ms';
-  document.getElementById('val-ip').textContent = base.replace('http://','');
+  document.getElementById('val-jitter').textContent = pingRes.jitter + ' ms';
+  document.getElementById('val-ip').textContent = base.replace('http://', '');
   document.getElementById('val-loss').textContent = '0.00%';
-  document.getElementById('val-overhead').textContent = pingRes.jitter+' ms';
-  setServer(base.replace('http://','')); setProgress(25);
-  setStatus('Measuring download…','active'); setPhase('download ↓');
-  const dl = await measureDownload(base); if (dl===null) throw new Error('Download failed');
-  litCard('dl', dl.toFixed(1), 'lit'); setProgress(80);
-  setStatus('Measuring upload…','active'); setPhase('upload ↑');
-  const ul = await measureUpload(base); if (ul===null) throw new Error('Upload failed');
+  document.getElementById('val-overhead').textContent = pingRes.jitter + ' ms';
+  setServer(base.replace('http://', ''));
+  setProgress(25);
+  setStatus('Measuring download…', 'active');
+  setPhase('download ↓');
+  const dl = await measureDownload(base);
+  if (dl === null) throw new Error('Download failed');
+  litCard('dl', dl.toFixed(1), 'lit');
+  setProgress(80);
+  setStatus('Measuring upload…', 'active');
+  setPhase('upload ↑');
+  const ul = await measureUpload(base);
+  if (ul === null) throw new Error('Upload failed');
   litCard('ul', ul.toFixed(1), 'upload-lit');
-  return {ping:pingRes.ping,jitter:pingRes.jitter,dl,ul};
+  return { ping: pingRes.ping, jitter: pingRes.jitter, dl, ul };
 }
 
 function gradeSpeed(dl) {
-  if (dl>=300) return {grade:'A+',color:'#00e5ff',bg:'#00e5ff15',desc:'Blazing fast — streaming, gaming, 4K video, all day long.'};
-  if (dl>=100) return {grade:'A', color:'#00d97e',bg:'#00d97e15',desc:'Excellent — handles everything a household can throw at it.'};
-  if (dl>=50)  return {grade:'B', color:'#a3e635',bg:'#a3e63515',desc:'Good — HD streaming and video calls are smooth.'};
-  if (dl>=25)  return {grade:'C', color:'#fbbf24',bg:'#fbbf2415',desc:'Fair — basic browsing and SD video work fine.'};
-  if (dl>=10)  return {grade:'D', color:'#fb923c',bg:'#fb923c15',desc:'Slow — web browsing ok, streaming may buffer.'};
-  return {grade:'F',color:'#ff5a5a',bg:'#ff5a5a15',desc:'Very slow — consider calling your ISP.'};
+  if (dl >= 300) return { grade: 'A+', color: '#00e5ff', bg: '#00e5ff15', desc: '🚀 Blazing fast — streaming, gaming, 4K video, all day long.' };
+  if (dl >= 100) return { grade: 'A', color: '#00d97e', bg: '#00d97e15', desc: '✨ Excellent — handles everything a household can throw at it.' };
+  if (dl >= 50) return { grade: 'B', color: '#a3e635', bg: '#a3e63515', desc: '👍 Good — HD streaming and video calls are smooth.' };
+  if (dl >= 25) return { grade: 'C', color: '#fbbf24', bg: '#fbbf2415', desc: '😐 Fair — basic browsing and SD video work fine.' };
+  if (dl >= 10) return { grade: 'D', color: '#fb923c', bg: '#fb923c15', desc: '⚠️ Slow — web browsing ok, streaming may buffer.' };
+  return { grade: 'F', color: '#ff5a5a', bg: '#ff5a5a15', desc: '❌ Very slow — consider calling your ISP.' };
 }
 
 async function runTest() {
-  if (running) return; running = true;
-  document.getElementById('runBtn').disabled = true; document.getElementById('runBtn').textContent = '⌛ Testing…';
-  showProgress(true); setProgress(2); document.getElementById('sparklineWrap').style.opacity = 0;
+  if (running) return;
+  running = true;
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('runBtn').textContent = '⌛ Testing…';
+  showProgress(true);
+  setProgress(2);
+  document.getElementById('sparklineWrap').classList.remove('visible');
   document.getElementById('resultSummary').classList.remove('show');
-  ['ping','dl','ul'].forEach(id => {
-    document.getElementById('val-'+id).textContent='—'; document.getElementById('val-'+id).className='metric-value';
-    document.getElementById('card-'+id).classList.remove('highlight');
+  ['ping', 'dl', 'ul'].forEach(id => {
+    document.getElementById('val-' + id).textContent = '—';
+    document.getElementById('val-' + id).className = 'metric-value';
+    document.getElementById('card-' + id).classList.remove('highlight');
   });
-  ['jitter','ip','loss','overhead'].forEach(id => document.getElementById('val-'+id).textContent='—');
-  setNeedle(0); setDialValue(null);
+  ['jitter', 'ip', 'loss', 'overhead'].forEach(id => document.getElementById('val-' + id).textContent = '—');
+  setNeedle(0);
+  setDialValue(null);
   try {
     let results;
     try {
-      await fetch(`${BASE()}/api/ping?probe=1`,{cache:'no-store',signal:AbortSignal.timeout(2000)});
+      await fetch(`${BASE()}/api/ping?probe=1`, { cache: 'no-store', signal: AbortSignal.timeout(2000) });
       results = await realRun();
-    } catch { results = await demoRun(); }
-    setProgress(100); setPhase('done'); setStatus('Test complete','done');
-    setNeedle(results.dl); setDialValue(results.dl.toFixed(1));
+    } catch {
+      results = await demoRun();
+    }
+    setProgress(100);
+    setPhase('done');
+    setStatus('Test complete', 'done');
+    setNeedle(results.dl);
+    setDialValue(results.dl.toFixed(1));
     const g = gradeSpeed(results.dl);
     const badge = document.getElementById('gradeBadge');
-    badge.textContent = g.grade; badge.style.color = g.color; badge.style.background = g.bg;
+    badge.textContent = g.grade;
+    badge.style.color = g.color;
+    badge.style.background = g.bg;
     document.getElementById('resultDesc').textContent = g.desc;
     document.getElementById('resultSummary').classList.add('show');
     const now = new Date();
-    history.unshift({time:now.getHours()+':'+String(now.getMinutes()).padStart(2,'0'),ping:results.ping,dl:results.dl.toFixed(1),ul:results.ul?results.ul.toFixed(1):'—'});
-    if (history.length>5) history.pop(); renderHistory();
-  } catch(e) { setStatus('Error: '+e.message,'error'); setPhase('error'); setProgress(0); setDialValue(null); }
-  document.getElementById('runBtn').disabled = false; document.getElementById('runBtn').textContent = '↻ Run Again';
+    history.unshift({
+      time: now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0'),
+      ping: results.ping,
+      dl: results.dl.toFixed(1),
+      ul: results.ul ? results.ul.toFixed(1) : '—'
+    });
+    if (history.length > 5) history.pop();
+    renderHistory();
+  } catch (e) {
+    setStatus('Error: ' + e.message, 'error');
+    setPhase('error');
+    setProgress(0);
+    setDialValue(null);
+  }
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('runBtn').textContent = '↻ Run Again';
   running = false;
 }
 
 function renderHistory() {
   if (!history.length) return;
   document.getElementById('historySection').style.display = 'block';
-  document.getElementById('historyList').innerHTML = history.map(h=>`
+  document.getElementById('historyList').innerHTML = history.map(h => `
     <div class="history-row">
       <span class="history-time">${h.time}</span>
       <div class="history-bars">
@@ -503,7 +1307,23 @@ function renderHistory() {
     </div>`).join('');
 }
 
-function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+// Prefers color scheme
+window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
+  if (!localStorage.getItem('theme')) {
+    if (e.matches) {
+      body.classList.add('light-mode');
+      themeToggle.textContent = '☀️';
+    } else {
+      body.classList.remove('light-mode');
+      themeToggle.textContent = '🌙';
+    }
+  }
+});
 </script>
+
 </body>
 </html>
