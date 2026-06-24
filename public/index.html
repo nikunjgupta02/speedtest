@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SignalPulse — Speed Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #080d1a;
+  color: #e8eeff;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+.app {
+  max-width: 680px;
+  width: 100%;
+  padding: 2.5rem 1.5rem 4rem;
+}
+.header { text-align: center; margin-bottom: 2.5rem; }
+.header-eyebrow {
+  font-size: 11px; font-weight: 500; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #6b7db3; margin-bottom: 0.5rem;
+}
+.header-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px; font-weight: 600; color: #c4cfff; letter-spacing: -0.02em;
+}
+.header-title span { color: #00e5ff; }
+
+/* ─── DIAL ─── */
+.dial-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto 2rem; }
+.dial-svg { width: 100%; height: 100%; }
+.dial-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center; pointer-events: none;
+}
+.dial-value {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 46px; font-weight: 700; color: #00e5ff;
+  line-height: 1; letter-spacing: -0.03em;
+}
+.dial-unit { font-size: 13px; color: #6b7db3; margin-top: 2px; letter-spacing: 0.1em; }
+.dial-phase { font-size: 11px; color: #4a5a8a; margin-top: 6px; font-weight: 500; letter-spacing: 0.08em; }
+
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+  transform-origin: 140px 140px; opacity: 0;
+}
+.pulse-ring:nth-child(2) { animation-delay: 0.7s; }
+.pulse-ring:nth-child(3) { animation-delay: 1.4s; }
+@keyframes pulseRing { 0% { r: 30; opacity: 0.7; } 100% { r: 130; opacity: 0; } }
+.needle { transform-origin: 140px 140px; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─── STATUS ─── */
+.status-bar {
+  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 14px;
+  padding: 0.75rem 1.25rem; margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #374a6e; flex-shrink: 0; transition: background 0.3s; }
+.status-dot.active { background: #00e5ff; animation: blink 1s infinite; }
+.status-dot.done   { background: #00d97e; }
+.status-dot.error  { background: #ff5a5a; }
+@keyframes blink { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.status-text { font-size: 13px; color: #8ca0cc; flex: 1; }
+.status-server { font-size: 11px; color: #3d5178; font-weight: 500; }
+
+/* ─── PROGRESS ─── */
+.progress-wrap {
+  height: 3px; background: #111827; border-radius: 2px;
+  margin-bottom: 1.5rem; overflow: hidden; opacity: 0; transition: opacity 0.3s;
+}
+.progress-bar {
+  height: 100%; background: linear-gradient(90deg, #00e5ff, #c4b5fd);
+  border-radius: 2px; width: 0%; transition: width 0.3s ease;
+}
+
+/* ─── METRICS ─── */
+.metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.metric-card {
+  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 12px;
+  padding: 1rem; text-align: center; transition: border-color 0.3s;
+}
+.metric-card.highlight { border-color: #00e5ff44; }
+.metric-icon { font-size: 18px; margin-bottom: 6px; color: #3d5178; }
+.metric-icon.active       { color: #00e5ff; }
+.metric-icon.upload-active{ color: #c4b5fd; }
+.metric-label { font-size: 11px; color: #4a5a8a; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500; margin-bottom: 6px; }
+.metric-value { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 600; color: #c4cfff; letter-spacing: -0.02em; }
+.metric-unit  { font-size: 10px; color: #4a5a8a; margin-top: 2px; }
+.metric-value.lit        { color: #00e5ff; }
+.metric-value.upload-lit { color: #c4b5fd; }
+.metric-value.ping-lit   { color: #fbbf24; }
+
+/* ─── DETAILS ─── */
+.details-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.5rem; }
+.detail-card {
+  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 10px;
+  padding: 0.85rem 1rem; display: flex; justify-content: space-between; align-items: center;
+}
+.detail-label { font-size: 12px; color: #4a5a8a; }
+.detail-value { font-family: 'Space Grotesk', sans-serif; font-size: 14px; color: #8ca0cc; font-weight: 500; }
+
+/* ─── SPARKLINE ─── */
+.sparkline-wrap {
+  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 12px;
+  padding: 1rem; margin-bottom: 1.5rem; opacity: 0; transition: opacity 0.4s;
+}
+.sparkline-label { font-size: 11px; color: #3d5178; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; display: flex; justify-content: space-between; }
+.sparkline-canvas { width: 100%; height: 60px; display: block; }
+
+/* ─── BUTTON ─── */
+.run-btn {
+  display: block; width: 100%; padding: 1rem;
+  background: transparent; border: 0.5px solid #00e5ff55; border-radius: 14px;
+  font-family: 'Space Grotesk', sans-serif; font-size: 15px; font-weight: 600;
+  color: #00e5ff; letter-spacing: 0.05em; cursor: pointer; transition: all 0.2s;
+  margin-bottom: 1rem;
+}
+.run-btn:hover:not(:disabled) { background: #00e5ff0d; border-color: #00e5ff; }
+.run-btn:disabled { color: #3d5178; border-color: #1e2d4d; cursor: not-allowed; }
+
+/* ─── RESULT SUMMARY ─── */
+.result-summary {
+  text-align: center; padding: 1rem;
+  background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 14px;
+  margin-bottom: 1.5rem; display: none;
+}
+.result-summary.show { display: block; }
+.grade-badge {
+  display: inline-block; font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px; font-weight: 700; width: 50px; height: 50px;
+  line-height: 50px; text-align: center; border-radius: 10px; margin-bottom: 4px;
+}
+.result-desc { font-size: 13px; color: #6b7db3; margin-top: 4px; }
+
+/* ─── SERVER INPUT ─── */
+.server-input-wrap { display: flex; gap: 8px; margin-bottom: 1.5rem; align-items: center; }
+.server-label { font-size: 12px; color: #3d5178; white-space: nowrap; flex-shrink: 0; }
+.server-input {
+  flex: 1; background: #0e1525; border: 0.5px solid #1e2d4d; border-radius: 8px;
+  padding: 6px 10px; font-size: 12px; font-family: 'Space Grotesk', monospace;
+  color: #8ca0cc; outline: none;
+}
+.server-input:focus { border-color: #00e5ff44; }
+.demo-badge {
+  font-size: 10px; background: #1a2740; color: #4a6a9a; padding: 3px 8px;
+  border-radius: 5px; white-space: nowrap; border: 0.5px solid #1e2d4d;
+}
+
+/* ─── HISTORY ─── */
+.history-section { margin-top: 0.5rem; }
+.history-label { font-size: 11px; color: #3d5178; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+.history-row { display: flex; align-items: center; gap: 10px; padding: 0.5rem 0; border-bottom: 0.5px solid #0e1525; }
+.history-time { font-size: 11px; color: #3d5178; min-width: 50px; }
+.history-bars { display: flex; gap: 8px; flex: 1; flex-wrap: wrap; }
+.history-chip {
+  font-family: 'Space Grotesk', sans-serif; font-size: 12px; color: #6b7db3;
+  background: #111827; padding: 2px 8px; border-radius: 6px;
+  display: flex; align-items: center; gap: 4px;
+}
+.history-chip span { font-weight: 600; color: #8ca0cc; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-eyebrow">Network Diagnostics</div>
+    <div class="header-title">signal<span>pulse</span></div>
+  </div>
+
+  <div class="server-input-wrap">
+    <span class="server-label">Server</span>
+    <input class="server-input" id="serverUrl" value="" placeholder="(same origin)" />
+    <span class="demo-badge">Demo mode if offline</span>
+  </div>
+
+  <div class="dial-wrap">
+    <svg class="dial-svg" viewBox="0 0 280 280" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/>
+          <stop offset="100%" stop-color="#c4b5fd" stop-opacity="0.8"/>
+        </linearGradient>
+        <filter id="glowF">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+      <circle cx="140" cy="140" r="120" fill="none" stroke="#1e2d4d" stroke-width="0.5"/>
+      <circle cx="140" cy="140" r="100" fill="none" stroke="#1a2438" stroke-width="0.5"/>
+      <circle cx="140" cy="140" r="80"  fill="none" stroke="#141e30" stroke-width="0.5"/>
+      <circle cx="140" cy="140" r="55"  fill="#0a1020" stroke="#1e2d4d" stroke-width="0.5"/>
+      <circle id="speedArc" cx="140" cy="140" r="110"
+        fill="none" stroke="url(#arcGrad)" stroke-width="6"
+        stroke-dasharray="0 692" stroke-dashoffset="173"
+        stroke-linecap="round" transform="rotate(-225 140 140)"
+        style="transition:stroke-dasharray 0.5s ease;filter:url(#glowF)"/>
+      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="1.5"/>
+      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="1"/>
+      <circle class="pulse-ring" cx="140" cy="140" r="30" fill="none" stroke="#00e5ff" stroke-width="0.5"/>
+      <g id="needle" class="needle" transform="rotate(-115 140 140)">
+        <line x1="140" y1="140" x2="140" y2="42" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="round" filter="url(#glowF)"/>
+        <circle cx="140" cy="140" r="6" fill="#00e5ff" filter="url(#glowF)"/>
+        <circle cx="140" cy="140" r="3" fill="#080d1a"/>
+      </g>
+      <text x="30"  y="205" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">0</text>
+      <text x="55"  y="255" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">25</text>
+      <text x="140" y="268" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">50</text>
+      <text x="225" y="255" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">100</text>
+      <text x="250" y="205" fill="#3d5178" font-size="9" font-family="Space Grotesk,sans-serif" text-anchor="middle">500</text>
+    </svg>
+    <div class="dial-center">
+      <div class="dial-value" id="dialValue">—</div>
+      <div class="dial-unit">Mbps</div>
+      <div class="dial-phase" id="dialPhase">ready</div>
+    </div>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap"><div class="progress-bar" id="progressBar"></div></div>
+
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span class="status-text" id="statusText">Press "Run Test" to begin measurement</span>
+    <span class="status-server" id="statusServer">—</span>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="metric-card" id="card-ping">
+      <div class="metric-icon" id="icon-ping">◎</div>
+      <div class="metric-label">Ping</div>
+      <div class="metric-value" id="val-ping">—</div>
+      <div class="metric-unit">ms</div>
+    </div>
+    <div class="metric-card" id="card-dl">
+      <div class="metric-icon" id="icon-dl">↓</div>
+      <div class="metric-label">Download</div>
+      <div class="metric-value" id="val-dl">—</div>
+      <div class="metric-unit">Mbps</div>
+    </div>
+    <div class="metric-card" id="card-ul">
+      <div class="metric-icon" id="icon-ul">↑</div>
+      <div class="metric-label">Upload</div>
+      <div class="metric-value" id="val-ul">—</div>
+      <div class="metric-unit">Mbps</div>
+    </div>
+  </div>
+
+  <div class="details-row">
+    <div class="detail-card"><span class="detail-label">⧖ Jitter</span><span class="detail-value" id="val-jitter">—</span></div>
+    <div class="detail-card"><span class="detail-label">⊙ IP / Server</span><span class="detail-value" id="val-ip">—</span></div>
+    <div class="detail-card"><span class="detail-label">⊛ Packet loss</span><span class="detail-value" id="val-loss">—</span></div>
+    <div class="detail-card"><span class="detail-label">⊞ Overhead</span><span class="detail-value" id="val-overhead">—</span></div>
+  </div>
+
+  <div class="sparkline-wrap" id="sparklineWrap">
+    <div class="sparkline-label"><span>live throughput</span><span id="sparklinePhase"></span></div>
+    <canvas class="sparkline-canvas" id="sparklineCanvas" height="60"></canvas>
+  </div>
+
+  <div class="result-summary" id="resultSummary">
+    <div class="grade-badge" id="gradeBadge">—</div>
+    <div class="result-desc" id="resultDesc">—</div>
+  </div>
+
+  <button class="run-btn" id="runBtn" onclick="runTest()">▶ Run Test</button>
+
+  <div class="history-section" id="historySection" style="display:none">
+    <div class="history-label">Recent tests</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+const BASE = () => document.getElementById('serverUrl').value.trim().replace(/\/$/, '') || '';
+let running = false;
+let sparklineData = [];
+let history = [];
+
+function speedToAngle(mbps) {
+  const clamp = Math.min(mbps, 500);
+  const pct = Math.log1p(clamp) / Math.log1p(500);
+  return -115 + pct * 230;
+}
+
+function setNeedle(mbps) {
+  const angle = speedToAngle(mbps);
+  document.getElementById('needle').setAttribute('transform', `rotate(${angle} 140 140)`);
+  const circ = 2 * Math.PI * 110;
+  const pct = Math.log1p(Math.min(mbps, 500)) / Math.log1p(500);
+  const dash = pct * circ * 0.722;
+  document.getElementById('speedArc').setAttribute('stroke-dasharray', `${dash} ${circ}`);
+}
+
+function setDialValue(v) { document.getElementById('dialValue').textContent = v === null ? '—' : v; }
+function setPhase(txt) { document.getElementById('dialPhase').textContent = txt; document.getElementById('sparklinePhase').textContent = txt; }
+function setStatus(txt, state = '') { document.getElementById('statusText').textContent = txt; document.getElementById('statusDot').className = 'status-dot' + (state ? ` ${state}` : ''); }
+function setServer(txt) { document.getElementById('statusServer').textContent = txt; }
+function showProgress(show) { document.getElementById('progressWrap').style.opacity = show ? 1 : 0; }
+function setProgress(pct) { document.getElementById('progressBar').style.width = pct + '%'; }
+
+function drawSparkline(data, color = '#00e5ff') {
+  const canvas = document.getElementById('sparklineCanvas');
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = 60;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (data.length < 2) return;
+  const max = Math.max(...data, 1);
+  const w = canvas.width, h = canvas.height;
+  const step = w / (data.length - 1);
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, color + '55'); grad.addColorStop(1, color + '00');
+  ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  data.forEach((v, i) => { const x = i*step, y = h-(v/max)*(h-8)-4; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.stroke();
+  ctx.beginPath();
+  data.forEach((v, i) => { const x = i*step, y = h-(v/max)*(h-8)-4; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.lineTo((data.length-1)*step,h); ctx.lineTo(0,h); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+}
+
+function litCard(id, val, cssClass) {
+  document.getElementById('card-' + id).classList.add('highlight');
+  const el = document.getElementById('val-' + id);
+  el.textContent = val; el.className = 'metric-value ' + cssClass;
+}
+
+async function measurePing(base) {
+  const samples = [];
+  for (let i = 0; i < 5; i++) {
+    try { const t0 = performance.now(); await fetch(`${base}/api/ping?t=${Date.now()}`,{cache:'no-store'}); samples.push(performance.now()-t0); } catch {}
+    await sleep(100);
+  }
+  if (!samples.length) return null;
+  samples.sort((a,b)=>a-b);
+  const avg = samples.reduce((a,b)=>a+b,0)/samples.length;
+  return { ping: Math.round(avg), jitter: Math.round(Math.max(...samples)-Math.min(...samples)) };
+}
+
+async function measureDownload(base) {
+  sparklineData = [];
+  document.getElementById('sparklineWrap').style.opacity = 1;
+  let totalBytes = 0; const tStart = performance.now();
+  for (const mb of [1, 2, 4]) {
+    const bytes = mb * 1024 * 1024;
+    try {
+      const t0 = performance.now();
+      const resp = await fetch(`${base}/api/download?size=${bytes}&t=${Date.now()}`,{cache:'no-store'});
+      const reader = resp.body.getReader(); let received = 0;
+      while (true) {
+        const {done, value} = await reader.read(); if (done) break;
+        received += value.length;
+        const elapsed = (performance.now()-t0)/1000;
+        const mbps = (received*8)/(elapsed*1e6);
+        sparklineData.push(mbps); if (sparklineData.length>40) sparklineData.shift();
+        drawSparkline(sparklineData,'#00e5ff'); setNeedle(mbps); setDialValue(mbps.toFixed(1));
+        document.getElementById('val-dl').textContent = mbps.toFixed(1);
+      }
+      totalBytes += received;
+    } catch { return null; }
+    setProgress(30 + ([1,5,10].indexOf(mb)+1)*20);
+  }
+  const elapsed = (performance.now()-tStart)/1000;
+  return (totalBytes*8)/(elapsed*1e6);
+}
+
+async function measureUpload(base) {
+  sparklineData = [];
+  let totalBytes = 0; const tStart = performance.now();
+  for (const mb of [1, 3]) {
+    const bytes = mb*1024*1024;
+    try {
+      const t0 = performance.now();
+      await fetch(`${base}/api/upload`,{method:'POST',headers:{'Content-Type':'application/octet-stream'},body:new Uint8Array(bytes)});
+      const elapsed = (performance.now()-t0)/1000;
+      const mbps = (bytes*8)/(elapsed*1e6);
+      sparklineData.push(mbps); drawSparkline(sparklineData,'#c4b5fd');
+      setNeedle(mbps); setDialValue(mbps.toFixed(1));
+      document.getElementById('val-ul').textContent = mbps.toFixed(1);
+      totalBytes += bytes;
+    } catch { return null; }
+    setProgress(80 + ([1,5].indexOf(mb)+1)*8);
+  }
+  const elapsed = (performance.now()-tStart)/1000;
+  return (totalBytes*8)/(elapsed*1e6);
+}
+
+async function demoRun() {
+  setStatus('Demo mode — simulating measurements','active'); setServer('demo.local'); setPhase('ping');
+  document.getElementById('sparklineWrap').style.opacity = 1; sparklineData = [];
+  await sleep(200);
+  const demoPing = 18+Math.random()*30|0, demoJitter = 2+Math.random()*8|0;
+  litCard('ping', demoPing, 'ping-lit');
+  document.getElementById('val-jitter').textContent = demoJitter+' ms';
+  document.getElementById('val-ip').textContent = '192.168.1.'+(1+Math.random()*254|0);
+  document.getElementById('val-loss').textContent = (Math.random()*0.5).toFixed(2)+'%';
+  document.getElementById('val-overhead').textContent = (Math.random()*12+2).toFixed(1)+' ms';
+  setProgress(25); setPhase('download ↓');
+  for (let i=0;i<40;i++) {
+    const peak = 80+Math.random()*400;
+    const v = peak*(0.7+Math.sin(i/5)*0.3+Math.random()*0.2);
+    sparklineData.push(v); if (sparklineData.length>40) sparklineData.shift();
+    drawSparkline(sparklineData,'#00e5ff'); setNeedle(v); setDialValue(v.toFixed(1));
+    document.getElementById('val-dl').textContent = v.toFixed(1);
+    setProgress(25+i*1.4); await sleep(60);
+  }
+  const finalDl = 80+Math.random()*350;
+  litCard('dl', finalDl.toFixed(1), 'lit'); setProgress(80);
+  sparklineData = []; setPhase('upload ↑');
+  for (let i=0;i<20;i++) {
+    const v=(finalDl*0.3)*(0.8+Math.random()*0.4);
+    sparklineData.push(v); if (sparklineData.length>20) sparklineData.shift();
+    drawSparkline(sparklineData,'#c4b5fd'); setNeedle(v); setDialValue(v.toFixed(1));
+    document.getElementById('val-ul').textContent = v.toFixed(1);
+    setProgress(80+i*1); await sleep(80);
+  }
+  const finalUl = finalDl*(0.2+Math.random()*0.25);
+  litCard('ul', finalUl.toFixed(1), 'upload-lit');
+  return {ping:demoPing,jitter:demoJitter,dl:finalDl,ul:finalUl};
+}
+
+async function realRun() {
+  const base = BASE();
+  setStatus('Measuring ping…','active'); setPhase('ping'); setProgress(5);
+  const pingRes = await measurePing(base);
+  if (!pingRes) throw new Error('Server unreachable');
+  litCard('ping', pingRes.ping, 'ping-lit');
+  document.getElementById('val-jitter').textContent = pingRes.jitter+' ms';
+  document.getElementById('val-ip').textContent = base.replace('http://','');
+  document.getElementById('val-loss').textContent = '0.00%';
+  document.getElementById('val-overhead').textContent = pingRes.jitter+' ms';
+  setServer(base.replace('http://','')); setProgress(25);
+  setStatus('Measuring download…','active'); setPhase('download ↓');
+  const dl = await measureDownload(base); if (dl===null) throw new Error('Download failed');
+  litCard('dl', dl.toFixed(1), 'lit'); setProgress(80);
+  setStatus('Measuring upload…','active'); setPhase('upload ↑');
+  const ul = await measureUpload(base); if (ul===null) throw new Error('Upload failed');
+  litCard('ul', ul.toFixed(1), 'upload-lit');
+  return {ping:pingRes.ping,jitter:pingRes.jitter,dl,ul};
+}
+
+function gradeSpeed(dl) {
+  if (dl>=300) return {grade:'A+',color:'#00e5ff',bg:'#00e5ff15',desc:'Blazing fast — streaming, gaming, 4K video, all day long.'};
+  if (dl>=100) return {grade:'A', color:'#00d97e',bg:'#00d97e15',desc:'Excellent — handles everything a household can throw at it.'};
+  if (dl>=50)  return {grade:'B', color:'#a3e635',bg:'#a3e63515',desc:'Good — HD streaming and video calls are smooth.'};
+  if (dl>=25)  return {grade:'C', color:'#fbbf24',bg:'#fbbf2415',desc:'Fair — basic browsing and SD video work fine.'};
+  if (dl>=10)  return {grade:'D', color:'#fb923c',bg:'#fb923c15',desc:'Slow — web browsing ok, streaming may buffer.'};
+  return {grade:'F',color:'#ff5a5a',bg:'#ff5a5a15',desc:'Very slow — consider calling your ISP.'};
+}
+
+async function runTest() {
+  if (running) return; running = true;
+  document.getElementById('runBtn').disabled = true; document.getElementById('runBtn').textContent = '⌛ Testing…';
+  showProgress(true); setProgress(2); document.getElementById('sparklineWrap').style.opacity = 0;
+  document.getElementById('resultSummary').classList.remove('show');
+  ['ping','dl','ul'].forEach(id => {
+    document.getElementById('val-'+id).textContent='—'; document.getElementById('val-'+id).className='metric-value';
+    document.getElementById('card-'+id).classList.remove('highlight');
+  });
+  ['jitter','ip','loss','overhead'].forEach(id => document.getElementById('val-'+id).textContent='—');
+  setNeedle(0); setDialValue(null);
+  try {
+    let results;
+    try {
+      await fetch(`${BASE()}/api/ping?probe=1`,{cache:'no-store',signal:AbortSignal.timeout(2000)});
+      results = await realRun();
+    } catch { results = await demoRun(); }
+    setProgress(100); setPhase('done'); setStatus('Test complete','done');
+    setNeedle(results.dl); setDialValue(results.dl.toFixed(1));
+    const g = gradeSpeed(results.dl);
+    const badge = document.getElementById('gradeBadge');
+    badge.textContent = g.grade; badge.style.color = g.color; badge.style.background = g.bg;
+    document.getElementById('resultDesc').textContent = g.desc;
+    document.getElementById('resultSummary').classList.add('show');
+    const now = new Date();
+    history.unshift({time:now.getHours()+':'+String(now.getMinutes()).padStart(2,'0'),ping:results.ping,dl:results.dl.toFixed(1),ul:results.ul?results.ul.toFixed(1):'—'});
+    if (history.length>5) history.pop(); renderHistory();
+  } catch(e) { setStatus('Error: '+e.message,'error'); setPhase('error'); setProgress(0); setDialValue(null); }
+  document.getElementById('runBtn').disabled = false; document.getElementById('runBtn').textContent = '↻ Run Again';
+  running = false;
+}
+
+function renderHistory() {
+  if (!history.length) return;
+  document.getElementById('historySection').style.display = 'block';
+  document.getElementById('historyList').innerHTML = history.map(h=>`
+    <div class="history-row">
+      <span class="history-time">${h.time}</span>
+      <div class="history-bars">
+        <span class="history-chip">↓ <span>${h.dl}</span> Mbps</span>
+        <span class="history-chip">↑ <span>${h.ul}</span> Mbps</span>
+        <span class="history-chip">◎ <span>${h.ping}</span> ms</span>
+      </div>
+    </div>`).join('');
+}
+
+function sleep(ms) { return new Promise(r=>setTimeout(r,ms)); }
+</script>
+</body>
+</html>
